@@ -140,9 +140,7 @@ for i = 1:length(t)
         tau_c = [50 -40 -0.5]';        
     end
     if i==round(0.75*length(t))
-        %theta = [0.253 0.041 0]';
-        theta = [0.087 0.041 0.2]';
-        %tau_c = [-50 40 -0.1]';        
+        theta = [0.087 0.041 0.2]';       
     end
     
     % Fault design
@@ -163,7 +161,7 @@ for i = 1:length(t)
     sig2 = 0.5 * (m23 + m32);
     sig1 = xhat(5) * m22 + xhat(6) * sig2;
 
-    nudot = inv(M)*[Xu+2*Xuu*abs(xhat(4)), xhat(6)*m22, sig1+xhat(6)*sig2;
+    nudot = -inv(M)*[Xu+2*Xuu*abs(xhat(4)), xhat(6)*m22, sig1+xhat(6)*sig2;
                  -xhat(6)*m11, Yv+2*Yvv*abs(xhat(5)), Yr-xhat(4)*m11;
                   xhat(5)*m11-sig1, Nv+xhat(4)*m11-xhat(4)*m22, Nr+2*Nrr*abs(xhat(6))-xhat(4)*sig2];
 
@@ -171,13 +169,6 @@ for i = 1:length(t)
                    0, 0,  xhat(4)*cos(xhat(3))-xhat(5)*sin(xhat(3)), sin(xhat(3)),  cos(xhat(3)), 0;
                    0, 0,  0, 0, 0, 1;
                    zeros(3), nudot];
-
-%     FX = A+dt*[0 0 -sin(xhat(3))*xhat(4)-cos(xhat(3))*xhat(5) cos(xhat(3)) -sin(xhat(3)) 0;
-%         0 0 cos(xhat(3))*xhat(4)-sin(xhat(3))*xhat(5) sin(xhat(3)) cos(xhat(3)) 0;
-%         0 0 0 0 0 1;
-%         -inv(M)*[0 0 0 Xu+2*Xuu*abs(xhat(4)) -m22*xhat(6) -m22*xhat(5)-(m23+m32)*xhat(6);
-%         0 0 0 Yr*xhat(6)+m11*xhat(6) Yv+2*Yvv*abs(xhat(5)) Yr+m11*xhat(4); 
-%         0 0 0 m22*xhat(5)+((m23+m32)/2)*xhat(6)-m11*xhat(5) m22*xhat(4)+Nv-m11*xhat(4) ((m23+m32)/2)*xhat(4)+Nr+2*Nrr*abs(xhat(6))]]; % (replace with proper linearization of your dynamics if available)
 
     Pmin  = FX*Pplus*FX'+QF;
     Sigma = C*Pmin*C'+RF;
@@ -216,16 +207,16 @@ hold on
 plot(eta_vec(1,:), eta_vec(2,:), 'k', 'LineWidth', 3)
 plot(xhat_vec(1,:),xhat_vec(2,:), 'r:', 'LineWidth', 3)
 % plot(x_nf_vec(1,:),x_nf_vec(2,:), 'g', 'LineWidth', 1.5)
-plot(eta_vec(1,round(0.25*T/dt)), eta_vec(2,round(0.25*T/dt)), "rpentagram", "LineWidth", 4)
-plot(eta_vec(1,round(0.5*T/dt)), eta_vec(2,round(0.5*T/dt)), "rpentagram", "LineWidth", 4)
-plot(eta_vec(1,round(0.75*T/dt)), eta_vec(2,round(0.75*T/dt)), "rpentagram", "LineWidth", 4)
+plot(eta_vec(1,round(0.25*T/dt)), eta_vec(2,round(0.25*T/dt)), "gpentagram", "LineWidth", 3)
+plot(eta_vec(1,round(0.5*T/dt)), eta_vec(2,round(0.5*T/dt)), "bpentagram", "LineWidth", 3)
+plot(eta_vec(1,round(0.75*T/dt)), eta_vec(2,round(0.75*T/dt)), "rpentagram", "LineWidth", 3)
 grid minor
 ylabel('y (m)','FontSize',12)
 xlabel('x (m)','FontSize',12)
 % legend("simulation", "approximation", "No fault")
-legend("simulation", "approximation")
+legend("simulation", "approximation", "\tau 1", "\tau 2, fault 1", "fault 2")
 
-%% Plot 2 - Fault position vs no-fault
+%% Plot 2 - Vessel frame parameters
 
 
 figure(2);
@@ -234,6 +225,9 @@ subplot(3,1,1)
 plot(t,nu_vec(1,:), 'k', 'LineWidth', 3)
 hold on
 plot(t,xhat_vec(4,:), 'r:', 'LineWidth', 3)
+plot(0.25*T, nu_vec(1,round(0.25*T/dt)), "gpentagram", "LineWidth", 3)
+plot(0.5*T, nu_vec(1,round(0.5*T/dt)), "bpentagram", "LineWidth", 3)
+plot(0.75*T, nu_vec(1,round(0.75*T/dt)), "rpentagram", "LineWidth", 3)
 grid on;
 grid minor
 ylabel('u (m/s)','FontSize',12)
@@ -242,6 +236,9 @@ subplot(3,1,2)
 plot(t,nu_vec(2,:), 'k', 'LineWidth', 3)
 hold on
 plot(t,xhat_vec(5,:), 'r:', 'LineWidth', 3)
+plot(0.25*T, nu_vec(2,round(0.25*T/dt)), "gpentagram", "LineWidth", 3)
+plot(0.5*T, nu_vec(2,round(0.5*T/dt)), "bpentagram", "LineWidth", 3)
+plot(0.75*T, nu_vec(2,round(0.75*T/dt)), "rpentagram", "LineWidth", 3)
 grid on;
 grid minor
 ylabel('v (m/s)','FontSize',12)
@@ -249,13 +246,16 @@ subplot(3,1,3)
 plot(t,nu_vec(3,:), 'k', 'LineWidth', 3)
 hold on
 plot(t,xhat_vec(6,:), 'r:', 'LineWidth', 3)
+plot(0.25*T, nu_vec(3,round(0.25*T/dt)), "gpentagram", "LineWidth", 3)
+plot(0.5*T, nu_vec(3,round(0.5*T/dt)), "bpentagram", "LineWidth", 3)
+plot(0.75*T, nu_vec(3,round(0.75*T/dt)), "rpentagram", "LineWidth", 3)
 grid on;
 grid minor
 ylabel('r (rads/s)','FontSize',12)
 set(gca,'FontSize',12)
 xlabel('Time (s)','FontSize',12)
 set(gca,'FontSize',12)
-h1 = legend('True State','AEKF','FontSize',12);
+h1 = legend('True State','AEKF', "\tau 1", "\tau 2, fault 1", "fault 2",'FontSize',12);
 set(h1, 'Position', [0.7, 0.8, .1, .1])
 
 %% Plot - Fault parameter estimation
@@ -266,6 +266,9 @@ subplot(3,1,1)
 plot(t,theta_vec(1,:), 'k', 'LineWidth', 3)
 hold on;
 plot(t,thetahat_vec(1,:), 'r:', 'LineWidth', 3)
+plot(0.25*T, theta_vec(1,round(0.25*T/dt)), "gpentagram", "LineWidth", 3)
+plot(0.5*T, theta_vec(1,round(0.5*T/dt)), "bpentagram", "LineWidth", 3)
+plot(0.75*T, theta_vec(1,round(0.75*T/dt)), "rpentagram", "LineWidth", 3)
 ylabel('\theta_1','FontSize',12)
 xlabel('Time (s)','FontSize',12)
 grid on
@@ -275,6 +278,9 @@ subplot(3,1,2)
 plot(t,theta_vec(2,:), 'k', 'LineWidth', 3)
 hold on;
 plot(t,thetahat_vec(2,:), 'r:', 'LineWidth', 3)
+plot(0.25*T, theta_vec(2,round(0.25*T/dt)), "gpentagram", "LineWidth", 3)
+plot(0.5*T, theta_vec(2,round(0.5*T/dt)), "bpentagram", "LineWidth", 3)
+plot(0.75*T, theta_vec(2,round(0.75*T/dt)), "rpentagram", "LineWidth", 3)
 ylabel('\theta_2','FontSize',12)
 xlabel('Time (s)','FontSize',12)
 grid on
@@ -284,8 +290,41 @@ subplot(3,1,3)
 plot(t,theta_vec(3,:), 'k', 'LineWidth', 3)
 hold on;
 plot(t,thetahat_vec(3,:), 'r:', 'LineWidth', 3)
-legend('True \theta','Estimated \theta','FontSize',12);
+plot(0.25*T, theta_vec(3,round(0.25*T/dt)), "gpentagram", "LineWidth", 3)
+plot(0.5*T, theta_vec(3,round(0.5*T/dt)), "bpentagram", "LineWidth", 3)
+plot(0.75*T, theta_vec(3,round(0.75*T/dt)), "rpentagram", "LineWidth", 3)
+legend('True \theta','Estimated \theta', "\tau 1", "\tau 2, fault 1", "fault 2",'FontSize',12);
 ylabel('\theta_3','FontSize',12)
+xlabel('Time (s)','FontSize',12)
+grid on
+grid minor
+set(gca,'FontSize',12)
+
+%% Plot - controll input
+
+figure(4)
+clf;
+subplot(3,1,1)
+plot(t,tau_c_vec(1,:), 'k', 'LineWidth', 3)
+hold on;
+ylabel('\tau_u','FontSize',12)
+xlabel('Time (s)','FontSize',12)
+grid on
+grid minor
+set(gca,'FontSize',12)
+subplot(3,1,2)
+plot(t,tau_c_vec(2,:), 'k', 'LineWidth', 3)
+hold on;
+ylabel('\tau_v','FontSize',12)
+xlabel('Time (s)','FontSize',12)
+grid on
+grid minor
+set(gca,'FontSize',12)
+subplot(3,1,3)
+plot(t,tau_c_vec(3,:), 'k', 'LineWidth', 3)
+hold on;
+ylabel('\tau_r','FontSize',12)
+% legend('True \theta','Estimated \theta', "\tau 1", "\tau 2, fault 1", "fault 2",'FontSize',12);
 xlabel('Time (s)','FontSize',12)
 grid on
 grid minor
